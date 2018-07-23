@@ -166,7 +166,12 @@ public class ExecutionContext<T> {
 	}
 
 	public EnvironmentInstance createEnvironmentInstance() {
-		return new EnvironmentInstance();
+		try {
+			return new EnvironmentInstance();
+		} catch (Throwable t) {
+			// catch everything such that a wrong environment does not affect invocations
+			throw new SqlExecutionException("Could not create environment instance.", t);
+		}
 	}
 
 	public Map<String, TableSource<?>> getTableSources() {
@@ -236,7 +241,7 @@ public class ExecutionContext<T> {
 				TableFactoryService.find(BatchTableSinkFactory.class, sinkProperties, classLoader);
 			return factory.createBatchTableSink(sinkProperties);
 		}
-		throw new SqlExecutionException("Unsupported execution type for sources.");
+		throw new SqlExecutionException("Unsupported execution type for sinks.");
 	}
 
 	// --------------------------------------------------------------------------------------------

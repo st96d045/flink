@@ -19,14 +19,14 @@
 package org.apache.flink.table.client.config;
 
 import org.apache.flink.table.descriptors.DescriptorProperties;
-import org.apache.flink.table.descriptors.TableSourceDescriptor;
+import org.apache.flink.table.descriptors.TableDescriptor;
 
 import java.util.Map;
 
 /**
  * Configuration of a table source.
  */
-public class Source extends TableSourceDescriptor {
+public class Source implements TableDescriptor {
 
 	private String name;
 	private Map<String, String> properties;

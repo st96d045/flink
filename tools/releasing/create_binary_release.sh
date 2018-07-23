@@ -20,11 +20,15 @@
 ##
 ## Variables with defaults (if not overwritten by environment)
 ##
-RELEASE_VERSION=${RELEASE_VERSION:-1.3-SNAPSHOT}
 SCALA_VERSION=none
 HADOOP_VERSION=none
 SKIP_GPG=${SKIP_GPG:-false}
 MVN=${MVN:-mvn}
+
+if [ -z "${RELEASE_VERSION}" ]; then
+    echo "RELEASE_VERSION was not set."
+    exit 1
+fi
 
 # fail immediately
 set -o errexit
@@ -43,6 +47,12 @@ if [ "$(uname)" == "Darwin" ]; then
 else
     SHASUM="sha512sum"
 fi
+
+cd ..
+
+FLINK_DIR=`pwd`
+RELEASE_DIR=${FLINK_DIR}/tools/releasing/release
+mkdir -p ${RELEASE_DIR}
 
 ###########################
 
@@ -65,18 +75,17 @@ make_binary_release() {
   cd flink-dist/target/flink-*-bin/
   tar czf "${dir_name}.tgz" flink-*
 
-  cp flink-*.tgz ../../../
-  cd ../../../
+  cp flink-*.tgz ${RELEASE_DIR}
+  cd ${RELEASE_DIR}
 
   # Sign sha the tgz
   if [ "$SKIP_GPG" == "false" ] ; then
     gpg --armor --detach-sig "${dir_name}.tgz"
   fi
   $SHASUM "${dir_name}.tgz" > "${dir_name}.tgz.sha512"
+
+  cd ${FLINK_DIR}
 }
-
-cd ..
-
 
 if [ "$SCALA_VERSION" == "none" ] && [ "$HADOOP_VERSION" == "none" ]; then
   make_binary_release "" "-DwithoutHadoop" "2.11"
